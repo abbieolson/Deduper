@@ -1,0 +1,65 @@
+
+
+
+
+
+
+
+
+
+optimization tips:
+
+good script organization -
+
+imports
+constants/globals
+functions
+classes
+main
+
+
+
+
+
+only opening once:
+
+
+FILES = ['a.txt', 'b.txt']
+fileDict = {}
+for f in FILES:
+  fileDict[f] = open(f, 'w')
+
+fileDict[f].write('Hi')
+fileDict['a.txt'].write('Hi2')
+
+MY_FILE = 'go_fast.txt'
+
+def write_it(i, f):
+  f.write(str(i))
+
+with open(MY_FILE, 'a') as f:
+  for i in range(0, 100000)
+    write_it(i, f)
+
+
+
+
+
+
+
+
+
+# Open files here
+
+for f in FILES:
+  filesDict[f] = open(f, 'w')
+
+# Big for loop going through all reads
+
+for i in range(0,100000)
+  fileDict[f].write('Hi' + str(i))
+
+# Close files here
+
+for f in FILES:
+  fileDict[f].close()
