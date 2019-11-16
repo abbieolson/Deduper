@@ -1,10 +1,37 @@
 PCR Duplicate Removal Pseudocode:
 
+# Acknowledgments
+# Nick and Seve for keys and dicts inspiration
+# Nick for the .group() regex idea
 
-#!/usr/bin/env python
+DEFINE THE PROBLEM:
 
+PCR duplicates occur during RNA-seq ibrary prep, specifically during PCR amplification,
+and must be removed so that RNA transcripts can be properly counted.
+
+PSEUDOCODE:
+
+Main idea:
+Bash:
+- Use "samtools sort" to convert to bam, sort by chromosome and left-most position, then
+  convert back to sam
+Python:
+- To remove PCR duplicates, the entire sam file needs to be parsed
+  1. Check the bitwise flag to ensure mapping occurred (FLAG 4) and if it was
+     a positive or negative read (FLAG 16)
+  2. Pass either the positive or negative read to its respective function
+     (one for positive read and one for negative read), as both are parsed differently
+  3. Initialize a dictionary for positive reads and a dict negative reads,
+     chromosome and 5' position as keys, UMI as value
+  4. Begin incrementing into the dictionary based on whether an UMI at a 5' position
+     was seen and on the same chromosome, add to dict if first time (conversely if
+     seeing the same UMI at the same 5' position on the same chromosome, pass)
+  5. When a new chromosome is encountered, write to file and flush
+
+CODE:
 
 import argparse
+import re
 
 parser = argparse.ArgumentParser(description="Program for demultiplexing")
 
@@ -21,65 +48,73 @@ UMI = args.umi
 HELP = args.help
 
 
+# chromosome - RNAME(SAM col 3) - 3 RNAME String \*|[:rname:∧*=][:rname:]*
+# position - POS (SAM col 4) - 4 POS Int [0, 2^31 − 1]
+# strand - FLAG (col 2) - 2 FLAG Int [0, 2^16 − 1]
+# cigar - CIGAR (SAM col 6)
+# same unique molecular index (UMI) - QNAME (col 1)
 
 
+def bit_flag():
+  '''A function for identifying forward and reverse reads'''
+
+    Write function to omit flag 4 (unmapped),
+    return True if mapped to forward strand
+    return False if mapped to reverse strand (flag 16)
 
 
+def read_parser()
+  '''A function for finding the 5' position and for identifying in which direction the reads mapped'''
+    if FLAG = True # forward strand
+      if soft-clipping at the beginning of the cigar string, subtract length of soft clip (i.e. 5S10M + 100 = 105)
+      return soft clip adjusted as 5' position
+      else no soft-clipping at 5' end, no adjustment needed (i.e. 100 = 100)
+      return as 5' position
+      return read length
+    if FLAG = False # reverse strand
+    sum the length of the cigar string
+      if soft-clipping at the beginning of the cigar string, subtract length of soft clip from the sum (i.e. 5S10M - 100 = 90)
+      return as 5' position
+      if soft-clipping at end of cigar string, add length of soft-clipping to the sum (i.e. 10M5S + 100 = 120)
+      return as 5' position
+      if insertions or deletions, subtract the length of the indels from the sum (i.e. 1I2D10M - 100 = 110)
+      return as 5' position
+return (FLAG, CIGAR, POS)
 
+CODE:
 
-optimization tips:
+Open UMI file
+Open sorted sam file
+Open an output sam file (for deduplicated file)
 
-good script organization -
+Read in UMI file and
 
-imports
-constants/globals
-functions
-classes
-main
+1.
+set forward dict
+set reverse dict
+set chromosome variable to 1 (for the first chromosome since they're sorted)
 
+  if the first character in the line is '@', they're headers - write to out file:
+    pass
+  else iterate:
+  - the header containing UMIs is on line 0, bitwise flag is on line 1, chromosome on line 2,
+  left-most on line 3, mapping quality on line 4, cigar string on line 5
+  - flag, left-most position, and cigar string passed into read_parser()
+  - make list to hold keys (chromosome, left-most position)
+  - use regex to extract the UMI from line 0
+  - use .group() to compare regex UMIs to UMI from the read
+    if UMI not in line, pass
+  - if the chromosome at line 2 doesn't equal the chromosome variable, flush the two dictionaries
+  - reinitialize the chromosome variable to line 2 (it will continue to increment)
 
+  if read mapped to forward strand:
+    if list of chromosome and left-most position not in forward dict, save it as the key, UMI as the value
+    else list already in dict
+      if UMI and list already in dict (duplicate), pass
+      if UMI and list not in dict, write
+    if list not in reverse dict, save it as the key, UMI as the value
+    else list of chromosome and left-most position already in dict
+      if UMI and list already in dict (duplicate), pass
+      if UMI and list not in dict, write
 
-
-
-only opening once:
-
-
-FILES = ['a.txt', 'b.txt']
-fileDict = {}
-for f in FILES:
-  fileDict[f] = open(f, 'w')
-
-fileDict[f].write('Hi')
-fileDict['a.txt'].write('Hi2')
-
-MY_FILE = 'go_fast.txt'
-
-def write_it(i, f):
-  f.write(str(i))
-
-with open(MY_FILE, 'a') as f:
-  for i in range(0, 100000)
-    write_it(i, f)
-
-
-
-
-
-
-
-
-
-# Open files here
-
-for f in FILES:
-  filesDict[f] = open(f, 'w')
-
-# Big for loop going through all reads
-
-for i in range(0,100000)
-  fileDict[f].write('Hi' + str(i))
-
-# Close files here
-
-for f in FILES:
-  fileDict[f].close()
+file.close()
