@@ -7,7 +7,11 @@ PCR Duplicate Removal Pseudocode:
 DEFINE THE PROBLEM:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 PCR duplicates occur during RNA-seq library prep, specifically during PCR amplification,
+=======
+PCR duplicates occur during RNA-seq ibrary prep, specifically during PCR amplification,
+>>>>>>> cd108b3fb1961ea380a12a2dca9e6234457ca9ae
 =======
 PCR duplicates occur during RNA-seq ibrary prep, specifically during PCR amplification,
 >>>>>>> cd108b3fb1961ea380a12a2dca9e6234457ca9ae
