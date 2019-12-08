@@ -1,4 +1,4 @@
-# PCR Duplicate Removal
+## PCR Duplicate Removal
 
 This is a program I wrote in Python 3 for removing PCR duplicates from a SAM file of uniquely mapped reads.
 
